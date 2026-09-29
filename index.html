@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seminário · Efeito poupador da tasipimidina · Kästner 2024</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;0,600;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1e3a36;
+    --bg-2: #254640;
+    --card: #f4efe4;
+    --ink: #1c2c2a;
+    --muted: #3e524e;
+    --cream: #f7f1e6;
+    --line: #c9bba6;
+    --teal: #2a7a6c;
+    --teal-deep: #13443d;
+    --clay: #a24b38;
+    --gold: #c4a36a;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur-slide: 700ms;
+    --dur-title: 800ms;
+    --dur-item: 620ms;
+    --dur-chart: 1200ms;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--cream); font-family: "Source Sans 3", "Segoe UI", Calibri, Arial, sans-serif; overflow: hidden; }
+  #deck { height: 100%; width: 100%; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    padding: 48px 64px 72px;
+    display: flex; flex-direction: column; justify-content: center;
+    opacity: 0;
+    transform: translate3d(48px, 0, 0) scale(0.97);
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity var(--dur-slide) var(--ease), transform var(--dur-slide) var(--ease), visibility 0s linear var(--dur-slide);
+  }
+  .slide[data-dir="back"] { transform: translate3d(-48px, 0, 0) scale(0.97); }
+  .slide.is-active {
+    opacity: 1; transform: none; pointer-events: auto; visibility: visible; z-index: 2;
+    transition: opacity var(--dur-slide) var(--ease), transform var(--dur-slide) var(--ease), visibility 0s;
+  }
+  .slide.is-leave-forward { opacity: 0; transform: translate3d(-40px, 0, 0) scale(0.98); visibility: hidden; z-index: 1; }
+  .slide.is-leave-back { opacity: 0; transform: translate3d(40px, 0, 0) scale(0.98); visibility: hidden; z-index: 1; }
+
+  .running {
+    position: absolute; top: 20px; left: 64px; right: 64px;
+    font-size: 13px; color: var(--gold); border-bottom: 1px solid rgba(196,163,106,.35); padding-bottom: 10px;
+  }
+  h2 {
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-weight: 600;
+    font-size: clamp(40px, 4.6vw, 60px); line-height: 1.1; color: var(--cream);
+  }
+  h3 { font-family: "Source Serif 4", serif; font-weight: 600; font-size: 22px; color: var(--teal-deep); }
+  .kicker { color: var(--gold); letter-spacing: .12em; text-transform: uppercase; font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+  .lede { font-size: 20px; color: #d7e3df; line-height: 1.45; margin-top: 12px; max-width: 980px; }
+  .article-name {
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-size: clamp(30px, 3.4vw, 44px);
+    font-weight: 600; line-height: 1.2; max-width: 1080px;
+  }
+  .meta { margin-top: 18px; font-size: 17px; color: #d7e3df; line-height: 1.5; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .card {
+    background: var(--card); color: var(--ink);
+    border-radius: 14px; padding: 18px 20px;
+  }
+  .card p, .card .stat-label { color: var(--muted); }
+  .card h3 { color: var(--teal-deep); }
+  .stat { font-family: "Source Serif 4", serif; font-size: 38px; line-height: 1; color: var(--teal); }
+  .stat.clay { color: var(--clay); }
+  .stat-label { margin-top: 8px; font-size: 15px; line-height: 1.4; }
+  .topic { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+  .chip { display: inline-block; background: #dceae6; color: var(--teal-deep); padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+  .path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px; }
+  .path .card { min-height: 210px; position: relative; }
+  .path .card:not(:last-child)::after {
+    content: "→"; position: absolute; right: -16px; top: 42%; color: var(--gold);
+    opacity: 0; font-size: 22px; transition: opacity var(--dur-item) var(--ease);
+  }
+  .path .card.is-in:has(+ .card.is-in)::after { opacity: 1; }
+  .step-n { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--clay); margin-bottom: 6px; }
+  .bar-row { display: grid; grid-template-columns: 88px 1fr 230px; align-items: center; gap: 12px; margin: 12px 0; font-size: 20px; }
+  .track { height: 20px; background: #315650; border-radius: 99px; overflow: hidden; }
+  .fill {
+    height: 100%; width: 0; border-radius: 99px; background: var(--gold);
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform var(--dur-chart) var(--ease);
+  }
+  .fill.is-drawn { transform: scaleX(1); }
+  .fill.soft { background: #7eb3a6; }
+  .fill.clay { background: #d57a64; }
+  .bar-val { font-variant-numeric: tabular-nums; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; font-size: 16px; background: var(--card); color: var(--ink); border-radius: 12px; overflow: hidden; }
+  th { text-align: left; color: var(--teal-deep); padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
+  td { padding: 11px 12px; border-bottom: 1px solid #e6dccb; vertical-align: top; }
+  .footnote { margin-top: auto; padding-top: 16px; font-size: 18px; line-height: 1.45; color: #d7e3df; }
+  .critique {
+    margin-top: 16px; background: #14332f; border: 1px solid rgba(196,163,106,.45);
+    border-radius: 14px; padding: 16px 18px; font-size: 19px; line-height: 1.45; color: var(--cream);
+  }
+  .critique strong { color: var(--gold); }
+  .names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; margin-top: 28px; max-width: 820px; }
+  .name { font-size: 18px; }
+  .name span { display: block; color: var(--gold); font-size: 14px; margin-top: 2px; }
+  .q-line { font-family: "Source Serif 4", serif; font-size: 26px; line-height: 1.35; margin: 8px 0; }
+  .refs { font-size: 15px; line-height: 1.5; columns: 2; column-gap: 28px; }
+  .refs p { break-inside: avoid; margin-bottom: 10px; color: #d7e3df; }
+  .refs b { color: var(--cream); }
+  ul.plain { list-style: none; margin-top: 8px; }
+  ul.plain li { padding: 6px 0 6px 14px; position: relative; color: var(--muted); }
+  ul.plain li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); position: absolute; left: 0; top: 13px; }
+
+  .anim-title, .anim-subtitle, .anim-support { opacity: 0; transform: translate3d(0, 36px, 0); }
+  .slide.is-active .anim-title { animation: fadeUp var(--dur-title) var(--ease) both; }
+  .slide.is-active .anim-subtitle { animation: fadeUp 720ms var(--ease) 180ms both; }
+  .slide.is-active .anim-support { animation: fadeUp 700ms var(--ease) 280ms both; }
+
+  .frag {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.96);
+    transition: opacity var(--dur-item) var(--ease), transform var(--dur-item) var(--ease);
+  }
+  .frag.is-in { opacity: 1; transform: none; }
+  li.frag {
+    opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; overflow: hidden;
+    transform: translate3d(0, 16px, 0);
+    transition: opacity var(--dur-item) var(--ease), transform var(--dur-item) var(--ease), max-height 520ms var(--ease), padding 520ms var(--ease);
+  }
+  li.frag.is-in { opacity: 1; max-height: 12em; padding: 6px 0 6px 14px; transform: none; }
+
+  .slide.is-active .refs.auto-stagger > p,
+  .slide.is-active .names .name {
+    opacity: 0; transform: translate3d(0, 22px, 0);
+    animation: fadeUp 640ms var(--ease) both;
+  }
+  .slide.is-active .names .name:nth-child(1) { animation-delay: 360ms; }
+  .slide.is-active .names .name:nth-child(2) { animation-delay: 480ms; }
+  .slide.is-active .names .name:nth-child(3) { animation-delay: 600ms; }
+  .slide.is-active .names .name:nth-child(4) { animation-delay: 720ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(1) { animation-delay: 200ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(2) { animation-delay: 260ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(3) { animation-delay: 320ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(4) { animation-delay: 380ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(5) { animation-delay: 440ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(6) { animation-delay: 500ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(7) { animation-delay: 560ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(8) { animation-delay: 620ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(9) { animation-delay: 680ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(10) { animation-delay: 740ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(11) { animation-delay: 800ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(12) { animation-delay: 860ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(13) { animation-delay: 920ms; }
+  .slide.is-active .refs.auto-stagger > p:nth-child(14) { animation-delay: 980ms; }
+
+  table thead { opacity: 0; }
+  table.is-ready thead { animation: fadeUp 480ms var(--ease) both; }
+  tr.frag { opacity: 0; transform: translate3d(0, 18px, 0); transition: opacity var(--dur-item) var(--ease), transform var(--dur-item) var(--ease); }
+  tr.frag.is-in { opacity: 1; transform: none; }
+
+  .slide.restore .anim-title, .slide.restore .anim-subtitle, .slide.restore .anim-support,
+  .slide.restore .refs.auto-stagger > p, .slide.restore .names .name,
+  .slide.restore table.is-ready thead { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .slide.restore .frag.is-in, .slide.restore .fill { transition: none !important; }
+
+  #progress-track { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: #315650; z-index: 29; }
+  #progress { position: fixed; top: 0; left: 0; height: 4px; width: 0; background: var(--gold); z-index: 30; transition: width 420ms var(--ease); }
+  #chrome {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 50px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; background: linear-gradient(transparent, rgba(19,40,37,.92));
+    z-index: 20; font-size: 13px; color: #b7c9c4;
+  }
+  #notes {
+    display: none; position: fixed; right: 18px; bottom: 62px; width: 360px; max-height: 40vh;
+    overflow: auto; background: var(--card); color: var(--ink); border-radius: 12px;
+    padding: 14px 16px; z-index: 25; font-size: 14px; line-height: 1.45;
+  }
+  #notes.open { display: block; }
+  .hint { position: fixed; bottom: 54px; left: 50%; transform: translateX(-50%); font-size: 13px; color: var(--gold); z-index: 21; animation: pulse 1.8s var(--ease) infinite; }
+  @keyframes fadeUp { from { opacity: 0; transform: translate3d(0, 36px, 0); } to { opacity: 1; transform: none; } }
+  @keyframes pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    :root { --dur-slide: 1ms; --dur-title: 1ms; --dur-item: 1ms; --dur-chart: 1ms; }
+    .slide, .frag, .fill, tr.frag, #progress, .hint { transition: none !important; animation: none !important; }
+    .slide.is-active .anim-title, .slide.is-active .anim-subtitle, .slide.is-active .anim-support,
+    .slide.is-active .names .name, .slide.is-active .refs.auto-stagger > p, li.frag.is-in, table.is-ready thead {
+      animation: none !important; opacity: 1 !important; transform: none !important;
+    }
+    .fill { transform: scaleX(1); }
+  }
+</style>
+</head>
+<body>
+<div id="progress-track"></div>
+<div id="progress"></div>
+<div id="hint" class="hint">Pressione → para avançar</div>
+<div id="deck">
+
+<section class="slide" data-notes="Leia o título em português e inglês. Apresente o grupo.">
+  <div class="kicker">Seminário de artigo · Anestesiologia veterinária</div>
+  <p class="article-name">Efeito poupador de anestésicos do fármaco ansiolítico tasipimidina em cães Beagle</p>
+  <p class="lede" style="margin-top:14px;"><em>Anaesthetic-sparing effect of the anxiolytic drug tasipimidine in Beagle dogs</em></p>
+  <p class="meta">
+    Kästner SBR, Amon T, Tünsmeyer J, Noll M, Söbbeler FJ, Laakso S, Saloranta L, Huhtinen M<br>
+    <em>Veterinary Anaesthesia and Analgesia</em>, 2024 · 51:244–252 · doi:10.1016/j.vaa.2024.02.001
+  </p>
+  <div class="names">
+    <div class="name">Andressa Lorraine<span>RA 2828703</span></div>
+    <div class="name">Bruna Queiroz<span>RA 2791980</span></div>
+    <div class="name">Mariana Regis<span>RA 2717766</span></div>
+    <div class="name">Silvia Rosa<span>RA 3285181</span></div>
+  </div>
+</section>
+
+<section class="slide" data-notes="O fármaco. Tessie. EMA. Os três cards: receptor, dose, o que não é.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024</div>
+  <h2>O fármaco</h2>
+  <p class="lede">A tasipimidina é um ansiolítico oral para cães, vendido como Tessie. A Agência Europeia de Medicamentos (EMA) autorizou o uso para alívio de curto prazo de ansiedade e medo situacionais — por exemplo, ruído ou saída do tutor. Fonte: relatório público europeu EPAR Tessie (EMEA/V/C/005427).</p>
+  <div class="grid3" style="margin-top:22px;">
+    <div class="card frag">
+      <div class="topic">Como o fármaco age</div>
+      <div class="stat">α₂A</div>
+      <p class="stat-label">É um agonista seletivo do receptor alfa-2A. Também se liga a sítios de imidazolina e tem agonismo fraco em serotonina. O efeito central reduz a liberação de noradrenalina.</p>
+    </div>
+    <div class="card frag">
+      <div class="topic">Dose licenciada</div>
+      <div class="stat">30 µg/kg</div>
+      <p class="stat-label">Via oral. Biodisponibilidade de 60% a 82%. O pico no sangue ocorre entre 30 e 90 minutos. Foi essa a dose usada no experimento de Kästner.</p>
+    </div>
+    <div class="card frag">
+      <div class="topic">O que se espera na clínica</div>
+      <div class="stat clay">Ansiólise</div>
+      <p class="stat-label">Não foi desenvolvida para sedação profunda. O alvo é acalmar o cão, mantendo-o acordado e capaz de andar.</p>
+    </div>
+  </div>
+  <p class="footnote frag">Fontes deste slide: EMA/EPAR Tessie; Lehtimäki et al., Eur J Pharmacol. 2022; Korpivaara et al., J Vet Behav. 2022. A dose de 30 µg/kg também é a usada no experimento de Kästner et al., 2024.</p>
+</section>
+
+<section class="slide" data-notes="A ideia do estudo: Tessie em casa, depois anestesia no mesmo dia. Duas perguntas.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024</div>
+  <h2>A pergunta do artigo</h2>
+  <p class="lede">A ideia do experimento é prática. O tutor pode dar Tessie em casa, cerca de uma hora antes da consulta. Se, nessa visita, o cão precisar de anestesia geral, os autores perguntaram:</p>
+  <div class="frag" style="margin-top:18px;">
+    <p class="q-line">1. A tasipimidina facilita o manejo e a colocação do cateter venoso?</p>
+  </div>
+  <div class="frag">
+    <p class="q-line">2. A tasipimidina reduz a dose de propofol para induzir e de isoflurano para manter a anestesia?</p>
+  </div>
+  <div class="card frag" style="margin-top:18px;">
+    <div class="topic">Como eles tentaram responder</div>
+    <p style="margin-top:8px; color:var(--muted); font-size:17px;">Anestesiaram os mesmos 7 cães Beagle quatro vezes. Compararam placebo com tasipimidina sozinha e com associações usadas na clínica (metadona e dexmedetomidina). A hipótese era “sim” para as duas perguntas. Só a segunda foi confirmada.</p>
+  </div>
+</section>
+
+<section class="slide" data-notes="Explique crossover, intervalo de 7 dias, cegamento e ARRIVE.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024</div>
+  <h2>Como o estudo foi feito</h2>
+  <div class="grid2" style="margin-top:20px;">
+    <div class="card frag">
+      <div class="topic">Animais</div>
+      <div class="stat">7 Beagles</div>
+      <p class="stat-label">3 machos e 4 fêmeas. Peso médio 13,1 kg. Idade média 18,6 meses. Cães de biotério, não pacientes de clínica.</p>
+    </div>
+    <div class="card frag">
+      <div class="topic">Crossover</div>
+      <div class="stat">4 anestesias</div>
+      <p class="stat-label">Cada cão recebe todos os tratamentos, em ordem sorteada. Assim, o animal é controle de si mesmo. Cada cão foi anestesiado quatro vezes.</p>
+    </div>
+    <div class="card frag">
+      <div class="topic">Intervalo entre anestesias</div>
+      <div class="stat">7 dias</div>
+      <p class="stat-label">Entre um tratamento e o próximo houve 7 dias de intervalo (washout), para o fármaco anterior não interferir no seguinte.</p>
+    </div>
+    <div class="card frag">
+      <div class="topic">Estudo cego</div>
+      <div class="stat">Cego</div>
+      <p class="stat-label">Quem observava o cão <strong>não sabia</strong> se a seringa oral era tasipimidina ou placebo. Isso reduz viés na hora de marcar sedação, cateter e intubação.</p>
+    </div>
+  </div>
+  <p class="footnote frag">O artigo também é prospectivo, randomizado e controlado por placebo. ARRIVE é um guia internacional de como relatar pesquisa com animais, não um resultado do experimento. Fonte: Percie du Sert et al., <em>PLoS Biology</em> 2020;18:e3000410 (ARRIVE 2.0). Kästner et al. declaram ter seguido esse guia.</p>
+</section>
+
+<section class="slide" data-notes="Os quatro tratamentos. Cada cão passou pelos quatro. TP isola a Tessie. A caixa de baixo é limite do desenho.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024</div>
+  <h2>Os quatro tratamentos do experimento</h2>
+  <p class="lede">Quatro protocolos. Todos os 7 cães passaram pelos quatro. A diferença é o que receberam 60 minutos antes do propofol (e, em alguns grupos, também na veia logo antes da indução).</p>
+  <div class="path">
+    <div class="card frag">
+      <div class="step-n">Tratamento PP</div>
+      <h3>Controle</h3>
+      <p class="stat-label">Placebo oral + soro na veia. Nenhum fármaco ativo. Serve de comparação: quanto propofol e isoflurano o cão precisa sem tasipimidina.</p>
+    </div>
+    <div class="card frag">
+      <div class="step-n">Tratamento TP</div>
+      <h3>Só tasipimidina</h3>
+      <p class="stat-label">30 µg/kg via oral + soro na veia. Isola o efeito da dose autorizada da Tessie, sem metadona e sem dexmedetomidina.</p>
+    </div>
+    <div class="card frag">
+      <div class="step-n">Tratamento TMP</div>
+      <h3>Tasipimidina + metadona</h3>
+      <p class="stat-label">A tasipimidina oral, depois metadona 0,2 mg/kg na veia. Imita um protocolo clínico com opioide.</p>
+    </div>
+    <div class="card frag">
+      <div class="step-n">Tratamento TMPD</div>
+      <h3>+ dexmedetomidina</h3>
+      <p class="stat-label">O anterior, mais dexmedetomidina 1 µg/kg na veia e infusão de 1 µg/kg/hora. Imita um protocolo com alfa-2 extra.</p>
+    </div>
+  </div>
+  <div class="critique frag">
+    <strong>Limite deste experimento.</strong> Não houve um grupo só com metadona nem um grupo só com dexmedetomidina. Por isso o experimento não consegue separar se a queda extra de anestésico veio da combinação ou só do opioide.
+  </div>
+</section>
+
+<section class="slide" data-notes="Três momentos de medida. A caixa de baixo explica MACNM.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024</div>
+  <h2>O que foi medido</h2>
+  <p class="lede">O experimento acompanhou três momentos da anestesia: o cão acordado, a indução com propofol e a manutenção com isoflurano.</p>
+  <div class="grid3" style="margin-top:18px;">
+    <div class="card frag">
+      <div class="topic">1. Cão acordado</div>
+      <h3>Sedação e cateter</h3>
+      <ul class="plain">
+        <li>Escore de sedação antes, aos 30 e aos 60 minutos</li>
+        <li>Como o cão reagiu à tricotomia e ao cateter</li>
+        <li>Quantas tentativas foram necessárias</li>
+      </ul>
+    </div>
+    <div class="card frag">
+      <div class="topic">2. Indução</div>
+      <h3>Quanto propofol até intubar</h3>
+      <ul class="plain">
+        <li>Dose de propofol injetada até a intubação</li>
+        <li>Tempo até perder o reflexo de endireitamento</li>
+        <li>Qualidade da intubação (incluindo tosse)</li>
+      </ul>
+    </div>
+    <div class="card frag">
+      <div class="topic">3. Manutenção</div>
+      <h3>Quanto isoflurano impede movimento</h3>
+      <ul class="plain">
+        <li>MAC<sub>NM</sub>: concentração alveolar mínima que impede movimento motor</li>
+        <li>Estímulo elétrico no membro torácico</li>
+        <li>Qualquer movimento (pata, cabeça, cauda) = resposta positiva</li>
+      </ul>
+    </div>
+  </div>
+  <div class="critique frag">
+    <strong>O que é MAC<sub>NM</sub>.</strong> A MAC clássica (Eger et al., 1965) só conta movimento <em>propositado</em>. A MAC<sub>NM</sub> conta qualquer movimento motor, então o valor fica mais alto (Seddighi et al., 2012). Por isso os 19% deste artigo não se comparam direto com estudos de MAC clássica.
+  </div>
+</section>
+
+<section class="slide" data-notes="Resultado 1: sedação leve, cateter igual.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024</div>
+  <h2>Resultado 1</h2>
+  <p class="lede">Houve sedação leve. O cateter não ficou mais fácil.</p>
+  <div class="grid2" style="margin-top:22px;">
+    <div class="card frag">
+      <div class="chip">Manejo</div>
+      <p style="margin-top:14px; font-size:18px; color:var(--ink);">Resposta ao cateter, facilidade e número de tentativas: <strong>sem diferença</strong> em relação ao placebo.</p>
+      <p class="stat-label" style="margin-top:12px;">Os autores atribuem isso aos Beagles de biotério, já habituados ao manejo. Não são o cão ansioso de cliente.</p>
+    </div>
+    <div class="card frag">
+      <div class="chip">Sedação</div>
+      <p style="margin-top:14px; font-size:18px; color:var(--ink);">Sinais leves de sedação aos 60 minutos após a tasipimidina oral.</p>
+      <p class="stat-label" style="margin-top:12px;">Coerente com a autorização da Tessie: acalmar, não derrubar o animal.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="Resultado 2: propofol 6,2 para 4,5. Com metadona 3,2.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024</div>
+  <h2>Resultado 2</h2>
+  <p class="lede">Propofol é o fármaco injetado na veia para <strong>induzir</strong> a anestesia, isto é, para o cão perder a consciência e permitir a intubação. Quanto menor a dose, menos propofol foi necessário.</p>
+  <div style="margin-top:20px;">
+    <div class="bar-row frag" data-bar="100"><div>PP</div><div class="track"><div class="fill soft" data-w="100"></div></div><div class="bar-val">6,2 mg/kg · controle</div></div>
+    <div class="bar-row frag" data-bar="73"><div>TP</div><div class="track"><div class="fill" data-w="73"></div></div><div class="bar-val">4,5 mg/kg · −28%</div></div>
+    <div class="bar-row frag" data-bar="52"><div>TMP</div><div class="track"><div class="fill clay" data-w="52"></div></div><div class="bar-val">3,2 mg/kg · −48%</div></div>
+    <div class="bar-row frag" data-bar="52"><div>TMPD</div><div class="track"><div class="fill clay" data-w="52"></div></div><div class="bar-val">3,2 mg/kg · −50%</div></div>
+  </div>
+  <div class="critique frag">
+    <strong>Como ler os %.</strong> “Menos 28%” não é a dose do fármaco. É a comparação com o controle (PP). Conta: (6,2 − 4,5) ÷ 6,2 ≈ 0,28. Com tasipimidina sozinha o cão precisou de cerca de 28% menos propofol para intubar. Com metadona, a dose caiu à metade. Acrescentar dexmedetomidina (TMPD) não baixou mais do que TMP. Fonte: Kästner et al., 2024, Tabela 2.
+  </div>
+</section>
+
+<section class="slide" data-notes="Resultado 3: isoflurano é o gás de manutenção. vol% é a concentração.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024 · Tabela 2</div>
+  <h2>Resultado 3</h2>
+  <p class="lede">Isoflurano é o gás que <strong>mantém</strong> o cão anestesiado depois da intubação. O número em vol% é a concentração do gás no ar expirado. Quanto menor o vol%, menos isoflurano foi preciso para o cão não se mexer no estímulo elétrico.</p>
+  <div style="margin-top:10px;">
+    <div class="bar-row frag" data-bar="100"><div>PP</div><div class="track"><div class="fill soft" data-w="100"></div></div><div class="bar-val">1,26 vol% · controle</div></div>
+    <div class="bar-row frag" data-bar="81"><div>TP</div><div class="track"><div class="fill" data-w="81"></div></div><div class="bar-val">1,02 vol% · −19%</div></div>
+    <div class="bar-row frag" data-bar="66"><div>TMP</div><div class="track"><div class="fill clay" data-w="66"></div></div><div class="bar-val">0,83 vol% · −35%</div></div>
+    <div class="bar-row frag" data-bar="63"><div>TMPD</div><div class="track"><div class="fill clay" data-w="63"></div></div><div class="bar-val">0,80 vol% · −35%</div></div>
+  </div>
+  <div class="critique frag">
+    <strong>O que isso significa.</strong> −19% = (1,26 − 1,02) ÷ 1,26. A tasipimidina sozinha deixou o cão imóvel com menos gás. TMP e TMPD ficaram iguais: a dexmedetomidina extra não aprofundou essa economia. A frequência cardíaca caiu 30–40% nos grupos com tasipimidina. Os autores avisam que uma diferença de até 20% pode passar despercebida na clínica. Fonte: Kästner et al., 2024, Tabela 2 e discussão.
+  </div>
+</section>
+
+<section class="slide" data-notes="Conclusão dos autores.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024</div>
+  <h2>Conclusão dos autores</h2>
+  <div class="card frag" style="margin-top:22px; max-width:920px;">
+    <ul class="plain" data-no-auto-frag style="margin-top:4px; font-size:20px;">
+      <li>A dose ansiolítica (30 µg/kg via oral) causa sedação leve</li>
+      <li>Não melhorou o cateter neste modelo de Beagle</li>
+      <li>Reduziu propofol (~28%) e isoflurano (~19%)</li>
+      <li>Metadona amplia essa redução</li>
+      <li>Isso deve ser considerado no plano anestésico</li>
+      <li>Financiamento: Orion Corporation, fabricante da Tessie. Os autores da empresa declaram que não influenciaram a interpretação dos dados.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide" data-notes="Pascoe 2006: mesmo periódico, mesma classe, mesma pergunta sobre a necessidade de isoflurano.">
+  <div class="running">Artigo de comparação · Pascoe et al., 2006</div>
+  <h2>Por que comparar com Pascoe 2006</h2>
+  <p class="lede">Mesmo periódico, mesma classe de fármaco (agonista alfa-2), mesma espécie, mesma pergunta: quanto isoflurano ainda é necessário para o cão não se mexer.</p>
+  <div class="grid2" style="margin-top:14px;">
+    <div class="card frag">
+      <div class="topic">O que Pascoe fez</div>
+      <p class="stat-label" style="color:var(--ink); font-size:16px;">Induziu com máscara de isoflurano (sem propofol). Mediu a MAC clássica com estímulo elétrico em dois membros. Testou três infusões de dexmedetomidina (0,1 / 0,5 / 3 µg/kg/h) e mediu o fármaco no sangue. Intervalo de 14 dias. Fonte: Pascoe PJ et al. <em>Vet Anaesth Analg.</em> 2006;33:97–103.</p>
+    </div>
+    <div class="card frag">
+      <div class="topic">O que “necessidade de isoflurano” quer dizer</div>
+      <p class="stat-label" style="color:var(--ink); font-size:16px;">Não é isoflurano “sobrando no vaporizador”. É a concentração mínima do gás (MAC) que impede o cão de se mover quando recebe um estímulo doloroso. Se um alfa-2 baixa essa concentração, precisa-se de menos gás para o mesmo efeito. Em Pascoe, a infusão mais baixa (0,1) <strong>não</strong> reduziu a MAC; só 0,5 (−18%) e 3 (−59%) reduziram.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="Três problemas. Ponto 3 é outro artigo. Dá para comparar o fármaco, com ressalva.">
+  <div class="running">Análise crítica</div>
+  <h2>Três problemas do estudo</h2>
+  <div class="grid3" style="margin-top:16px;">
+    <div class="card frag">
+      <h3>1. Número de cães</h3>
+      <p style="margin-top:8px; font-size:16px;">O experimento foi calculado para detectar uma queda de 30% na MAC<sub>NM</sub>. A tasipimidina sozinha baixou 19%. O efeito isolado ficou menor do que o tamanho usado no cálculo amostral. Fonte: Kästner et al., 2024, métodos e discussão.</p>
+    </div>
+    <div class="card frag">
+      <h3>2. Grupos incompletos</h3>
+      <p style="margin-top:8px; font-size:16px;">Houve tasipimidina + metadona, mas não houve metadona sozinha. Por isso o experimento não consegue dizer se a queda de 19% para 35% veio da combinação ou só do opioide. Fonte: Kästner et al., 2024; Shafer et al., <em>Anesth Analg.</em> 2008.</p>
+    </div>
+    <div class="card frag">
+      <h3>3. Outro artigo, outro cenário</h3>
+      <p style="margin-top:8px; font-size:16px;">Cambeiro-Camarero et al., 2026, <em>não</em> usou os Beagles de Kästner. Foram 30 cadelas de tutor, em ovariectomia. A dose de tasipimidina foi a mesma (30 µg/kg). Dá para comparar o fármaco, com ressalva: lá todos os grupos já recebiam dexmedetomidina + morfina. Nesse protocolo, a tasipimidina melhorou o manejo e não reduziu propofol nem fentanil. Fonte: <em>Vet Sci.</em> 2026;13:618.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="Conduta prática.">
+  <div class="running">Conduta</div>
+  <h2>O que mudaria na prática</h2>
+  <div class="grid3" style="margin-top:24px;">
+    <div class="card frag">
+      <div class="stat">−28%</div>
+      <div class="stat-label">Titule o propofol a efeito. Não use 6 mg/kg no automático.</div>
+    </div>
+    <div class="card frag">
+      <div class="stat">FC</div>
+      <div class="stat-label">Espere bradicardia. No artigo-irmão, frequência e débito caem 20–30%. Em cardiopata, não extrapole.</div>
+    </div>
+    <div class="card frag">
+      <div class="stat clay">0</div>
+      <div class="stat-label">Se o protocolo já tem alfa-2 e opioide, não conte com economia extra de anestésico.</div>
+    </div>
+  </div>
+  <p class="footnote frag">“Titular a efeito” significa injetar o anestésico em pequenas porções e parar quando o efeito desejado aparecer (quando der para intubar), em vez de aplicar uma dose fixa cheia.</p>
+</section>
+
+<section class="slide" data-notes="Fechamento em tópicos. Beagle de laboratório está no artigo.">
+  <div class="running">Kästner et al., Vet Anaesth Analg. 2024;51:244–252</div>
+  <h2>Fechamento</h2>
+  <div class="grid2" style="margin-top:16px;">
+    <div class="card frag">
+      <div class="topic">O que o experimento mostrou</div>
+      <ul class="plain">
+        <li>Os cães eram Beagles de biotério: o artigo chama de <em>laboratory Beagles</em>, alojados em grupos, habituados ao manejo (Kästner et al., 2024, discussão).</li>
+        <li>A dose ansiolítica reduziu propofol e isoflurano.</li>
+        <li>O experimento foi crossover, cego e com placebo — isso é um ponto forte.</li>
+      </ul>
+    </div>
+    <div class="card frag">
+      <div class="topic">O que fica em aberto</div>
+      <ul class="plain">
+        <li>O cateter não ficou mais fácil neste modelo.</li>
+        <li>O experimento não isolou o efeito da metadona sozinha.</li>
+        <li>Usou MAC<sub>NM</sub>, não a MAC clássica.</li>
+        <li>Em ovariectomia com dexmedetomidina + morfina, a economia de anestésico não apareceu (Cambeiro-Camarero et al., 2026).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="Referências na tela. Não leia.">
+  <div class="running">Referências</div>
+  <h2>Fontes</h2>
+  <div class="refs auto-stagger" style="margin-top:16px;">
+    <p><b>Kästner SBR et al.</b> Anaesthetic-sparing effect of the anxiolytic drug tasipimidine in Beagle dogs. <em>Vet Anaesth Analg.</em> 2024;51:244–252.</p>
+    <p><b>Kästner SBR et al.</b> Effects of tasipimidine… on cardiovascular variables… <em>Vet Anaesth Analg.</em> 2024.</p>
+    <p><b>Pascoe PJ et al.</b> Changes in the MAC of isoflurane… during three CRIs of dexmedetomidine in dogs. <em>Vet Anaesth Analg.</em> 2006;33:97–103.</p>
+    <p><b>Acevedo-Arcique CM et al.</b> Lidocaine, dexmedetomidine and their combination reduce isoflurane MAC in dogs. <em>PLoS One.</em> 2014;9:e106620.</p>
+    <p><b>Cambeiro-Camarero N et al.</b> Preoperative oral tasipimidine in dogs undergoing elective ovariectomy. <em>Vet Sci.</em> 2026;13:618.</p>
+    <p><b>Valverde A et al.</b> Validation of several types of noxious stimuli… MAC… <em>Am J Vet Res.</em> 2003;64:957–962.</p>
+    <p><b>Seddighi R et al.</b> MAC and MAC derivatives (MAC<sub>NM</sub>) in dogs. <em>Am J Vet Res.</em> 2012;73:341–345.</p>
+    <p><b>Eger EI et al.</b> Minimum alveolar anesthetic concentration. <em>Anesthesiology.</em> 1965;26:756–763.</p>
+    <p><b>Percie du Sert N et al.</b> The ARRIVE guidelines 2.0. <em>PLoS Biol.</em> 2020;18:e3000410.</p>
+    <p><b>Lehtimäki J et al.</b> Tasipimidine—pharmacological profile… <em>Eur J Pharmacol.</em> 2022;923:174949.</p>
+    <p><b>Korpivaara M et al.</b> Tasipimidine… canine acute anxiety… <em>J Vet Behav.</em> 2022.</p>
+    <p><b>EMA.</b> Tessie EPAR (EMEA/V/C/005427). https://www.ema.europa.eu/en/medicines/veterinary/EPAR/tessie</p>
+    <p><b>Shafer SL et al.</b> Additivity versus synergy… <em>Anesth Analg.</em> 2008;107:507–524.</p>
+    <p><b>Murrell JC, Hellebrekers LJ.</b> Medetomidine and dexmedetomidine… <em>Vet Anaesth Analg.</em> 2005;32:117–127.</p>
+  </div>
+</section>
+
+</div>
+<div id="notes"></div>
+<div id="chrome">
+  <span>← → avança um bloco · F tela cheia · N notas</span>
+  <span id="counter"></span>
+</div>
+
+<script>
+(function () {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const slides = [...document.querySelectorAll(".slide")];
+  const notesEl = document.getElementById("notes");
+  const progress = document.getElementById("progress");
+  const counter = document.getElementById("counter");
+  const hint = document.getElementById("hint");
+  let index = 0;
+  const steps = slides.map(() => 0);
+
+  function decorate(slide) {
+    const title = slide.querySelector("h2, .article-name");
+    const kicker = slide.querySelector(".kicker");
+    const subtitle = slide.querySelector(".lede:not(.frag), .meta");
+    if (title) title.classList.add("anim-title");
+    if (kicker) kicker.classList.add("anim-subtitle");
+    if (subtitle) subtitle.classList.add("anim-subtitle");
+    slide.querySelectorAll("ul.plain:not([data-no-auto-frag]) > li").forEach((li) => li.classList.add("frag"));
+  }
+  slides.forEach(decorate);
+  const frags = (slide) => [...slide.querySelectorAll(".frag")];
+
+  function setBar(el, on, instant) {
+    const w = el.getAttribute("data-w") || el.closest("[data-bar]")?.getAttribute("data-bar") || "100";
+    el.style.width = w + "%";
+    if (instant) el.style.transition = "none";
+    if (on) {
+      requestAnimationFrame(() => {
+        el.classList.add("is-drawn");
+        if (instant) { el.offsetHeight; el.style.transition = ""; }
+      });
+    } else {
+      el.classList.remove("is-drawn");
+      if (instant) { el.offsetHeight; el.style.transition = ""; }
+    }
+  }
+
+  function applyStep(slide, n, instant) {
+    const list = frags(slide);
+    const table = slide.querySelector("table");
+    list.forEach((f, idx) => {
+      const on = idx < n;
+      f.classList.toggle("is-in", on);
+      f.querySelectorAll(".fill").forEach((fill) => setBar(fill, on, instant));
+    });
+    if (table) table.classList.toggle("is-ready", n > 0);
+  }
+
+  function updateChrome() {
+    counter.textContent = (index + 1) + " / " + slides.length;
+    const local = frags(slides[index]);
+    const frac = local.length ? steps[index] / local.length : 1;
+    progress.style.width = ((index + frac) / Math.max(slides.length - 1, 1)) * 100 + "%";
+    notesEl.textContent = slides[index].dataset.notes || "";
+    hint.style.display = index === 0 && steps[0] === 0 ? "block" : "none";
+  }
+
+  function go(to, dir) {
+    if (to === index) return;
+    const from = slides[index];
+    const next = slides[to];
+    const restore = dir < 0;
+    from.classList.remove("is-active");
+    from.classList.add(dir > 0 ? "is-leave-forward" : "is-leave-back");
+    next.dataset.dir = dir < 0 ? "back" : "forward";
+    next.classList.remove("is-leave-forward", "is-leave-back", "restore");
+    if (restore) {
+      if (steps[to] === 0) steps[to] = frags(next).length;
+      next.classList.add("restore");
+      applyStep(next, steps[to], true);
+    } else {
+      steps[to] = 0;
+      applyStep(next, 0, true);
+    }
+    void next.offsetWidth;
+    next.classList.add("is-active");
+    index = to;
+    if (restore) requestAnimationFrame(() => next.classList.remove("restore"));
+    setTimeout(() => from.classList.remove("is-leave-forward", "is-leave-back"), reduce ? 0 : 700);
+    updateChrome();
+  }
+
+  function forward() {
+    const slide = slides[index];
+    if (steps[index] < frags(slide).length) {
+      steps[index] += 1;
+      applyStep(slide, steps[index], false);
+      updateChrome();
+      return;
+    }
+    if (index < slides.length - 1) go(index + 1, 1);
+  }
+  function backward() {
+    if (steps[index] > 0) {
+      steps[index] -= 1;
+      applyStep(slides[index], steps[index], false);
+      updateChrome();
+      return;
+    }
+    if (index > 0) go(index - 1, -1);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (["ArrowRight", "ArrowDown", " ", "PageDown", "Enter"].includes(e.key)) { e.preventDefault(); forward(); }
+    if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); backward(); }
+    if (e.key === "f" || e.key === "F") document.documentElement.requestFullscreen?.();
+    if (e.key === "n" || e.key === "N") notesEl.classList.toggle("open");
+  });
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("#notes") || e.target.closest("#chrome")) return;
+    forward();
+  });
+
+  slides[0].classList.add("is-active");
+  applyStep(slides[0], 0, true);
+  updateChrome();
+})();
+</script>
+</body>
+</html>
